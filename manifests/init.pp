@@ -13,6 +13,7 @@ class restic_rest_server (
   $install_unzip = $restic_rest_server::params::install_unzip,
   $restic_users = $restic_rest_server::params::restic_users,
 ) inherits restic_rest_server::params
+
 {
 if $path {
     $path_option = "--path ${path}"
@@ -21,17 +22,6 @@ if $path {
     }
 }
 
-htpasswd { user:
-  cryptpasswd => ht_sha1('password'),
-  #file     => "${path}/.htpasswd",
-  target     => "${path}/.htpasswd",
-  notify => Service['rest-server'],
-}
-
-file { "${path}/.htpasswd":
-  owner => $user,
-  ensure => file,
-}
 
 ## prepare list of options for systemd service
 if $prometheus { $prometheus_option = '--prometheus' }
@@ -83,8 +73,18 @@ service {  'rest-server':
   ensure  => 'running',
   require => [ File['/etc/systemd/system/rest-server.service'],
          File['/usr/local/bin/rest-server'],
-	 File["${path}/.htpasswd"]
 	],
+}
+if $restic_users {
+	file { "${path}/.htpasswd":
+	  owner => $user,
+	  ensure => file,
+	  mode => '0600',
+          notify => Service['rest-server'],
+	}
+
+	create_resources(restic_rest_server::htpasswd_user, $restic_users, {'htpasswd_path' => $path})
 }
 
 }
+

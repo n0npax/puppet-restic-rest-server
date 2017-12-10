@@ -14,4 +14,5 @@ class restic_rest_server::params
 	$listen = undef
 	$append_only = false	
 	$install_unzip = true
+	$restic_users = undef
 }
