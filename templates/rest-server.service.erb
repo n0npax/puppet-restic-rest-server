@@ -1,0 +1,16 @@
+[Unit]
+Description=Rest Server
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=<%= @user %>
+Group=<%= @group %>
+ExecStart=/usr/local/bin/rest-server <%= @options %>
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target
