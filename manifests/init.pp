@@ -3,7 +3,7 @@ class restic_rest_server (
   $user = $restic_rest_server::params::user,
   $group = $restic_rest_server::params::group,
   $prometheus = $restic_rest_server::params::prometheus,
-  $path = $restic_rest_server::params::path,
+  $data_path = $restic_rest_server::params::data_path,
   $tls = $restic_rest_server::params::tls,
   $tls_cert = $restic_rest_server::params::tls_cert,
   $tls_key = $restic_rest_server::params::tls_key,
@@ -15,10 +15,12 @@ class restic_rest_server (
 ) inherits restic_rest_server::params
 
 {
-if $path {
-    $path_option = "--path ${path}"
-    file { $path:
+if $data_path {
+    $data_path_option = "--path ${data_path}"
+    file { $data_path:
+        recurse    => true,
         ensure => directory,
+        owner  => $user,
     }
 }
 
@@ -32,7 +34,7 @@ if $tls {  $tls_option = '--tls' }
 if $tls_cert {     $tls_cert_option = "--tls-cert ${tls_cert}" }
 if $tls_key {     $tls_key_option = "--tls-key ${tls_key}" }
 
-$options = "${path_option} ${prometheus_option} ${listen_option} ${log_option} ${append_only_option} ${tls_option} ${tls_cert_option} ${tls_key_option}"
+$options = "${data_path_option} ${prometheus_option} ${listen_option} ${log_option} ${append_only_option} ${tls_option} ${tls_cert_option} ${tls_key_option}"
 
 if $install_unzip {
    package {'unzip':
@@ -41,8 +43,9 @@ if $install_unzip {
 }
 if $log {
     file { $log:
-  owner => $user,
-  ensure => file,
+        owner  => $user,
+        group  => $group,
+        ensure => file,
     }
 }
 
@@ -73,17 +76,18 @@ service {  'rest-server':
   ensure  => 'running',
   require => [ File['/etc/systemd/system/rest-server.service'],
          File['/usr/local/bin/rest-server'],
-	],
+  ],
 }
 if $restic_users {
-	file { "${path}/.htpasswd":
-	  owner => $user,
-	  ensure => file,
-	  mode => '0600',
-          notify => Service['rest-server'],
-	}
+  file { "${data_path}/.htpasswd":
+    owner  => $user,
+    group   => $group,
+    ensure => file,
+    mode   => '0600',
+    notify => Service['rest-server'],
+  }
 
-	create_resources(restic_rest_server::htpasswd_user, $restic_users, {'htpasswd_path' => $path})
+  create_resources(restic_rest_server::htpasswd_user, $restic_users, {'data_path' => $data_path})
 }
 
 }

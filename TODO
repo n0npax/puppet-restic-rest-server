@@ -1,4 +1,4 @@
 1. Fix linting and idents
-2. change names of variables like 'path'
+2. refactor
 3. Test if changing params works fine
-4. refactor
+4. implement support for tls files
