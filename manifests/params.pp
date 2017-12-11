@@ -1,8 +1,6 @@
 class restic_rest_server::params
-(
-
-) {
-  $version = '0.9.5'
+{
+  $version = '0.9.5' # default version
   $data_path = '/data/restic'
   $user = 'www-data'
   $group = 'www-data'

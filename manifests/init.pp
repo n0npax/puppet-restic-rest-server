@@ -4,7 +4,6 @@ class restic_rest_server (
   $group = $restic_rest_server::params::group,
   $prometheus = $restic_rest_server::params::prometheus,
   $data_path = $restic_rest_server::params::data_path,
-  $tls = $restic_rest_server::params::tls,
   $tls_cert = $restic_rest_server::params::tls_cert,
   $tls_key = $restic_rest_server::params::tls_key,
   $log = $restic_rest_server::params::log,
@@ -24,17 +23,43 @@ if $data_path {
     }
 }
 
+if $tls_cert and $tls_cert {
+    $tls_option = '--tls --tls-cert /etc/restic/rest-server/cert --tls-key /etc/restic/rest-server/key'
+    file { '/etc/restic':
+        ensure => directory,
+        owner => $user,
+        group => $group,
+    }
+    file { '/etc/restic/rest-server':
+        ensure => directory,
+        owner => $user,
+        group => $group,
+        require => File['/etc/restic'],
+    }
+    file { '/etc/restic/rest-server/cert':
+        ensure => file,
+        owner => $user,
+        group => $group,
+        content => $tls_cert,
+        require => File['/etc/restic/rest-server'],
+    }
+    file { '/etc/restic/rest-server/key':
+        ensure => file,
+        owner => $user,
+        group => $group,
+        content => $tls_key,
+        require => File['/etc/restic/rest-server'],
+    }
 
-## prepare list of options for systemd service
+}
+
+
 if $prometheus { $prometheus_option = '--prometheus' }
 if $listen { $listen_option = "--listen ${lister}" }
-if $log {  $log_option = "--log ${log}" }
+if $log { $log_option = "--log ${log}" }
 if $append_only { $append_only_option = '--append_only' }
-if $tls {  $tls_option = '--tls' }
-if $tls_cert {     $tls_cert_option = "--tls-cert ${tls_cert}" }
-if $tls_key {     $tls_key_option = "--tls-key ${tls_key}" }
 
-$options = "${data_path_option} ${prometheus_option} ${listen_option} ${log_option} ${append_only_option} ${tls_option} ${tls_cert_option} ${tls_key_option}"
+$options = "${data_path_option} ${prometheus_option} ${listen_option} ${log_option} ${append_only_option} ${tls_option}"
 
 if $install_unzip {
    package {'unzip':
@@ -74,7 +99,8 @@ file { '/etc/systemd/system/rest-server.service':
 service {  'rest-server':
   enable  => true,
   ensure  => 'running',
-  require => [ File['/etc/systemd/system/rest-server.service'],
+  require => [
+         File['/etc/systemd/system/rest-server.service'],
          File['/usr/local/bin/rest-server'],
   ],
 }
@@ -87,7 +113,7 @@ if $restic_users {
     notify => Service['rest-server'],
   }
 
-  create_resources(restic_rest_server::htpasswd_user, $restic_users, {'data_path' => $data_path})
+create_resources(restic_rest_server::htpasswd_user, $restic_users, {'data_path' => $data_path})
 }
 
 }

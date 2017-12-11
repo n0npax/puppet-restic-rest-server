@@ -1,5 +1,5 @@
 define restic_rest_server::htpasswd_user (
-  $password = undef,
+  $password,
   $data_path,
 )
 {
