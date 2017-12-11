@@ -57,7 +57,7 @@ if $tls_cert and $tls_cert {
 if $prometheus { $prometheus_option = '--prometheus' }
 if $listen { $listen_option = "--listen ${lister}" }
 if $log { $log_option = "--log ${log}" }
-if $append_only { $append_only_option = '--append_only' }
+if $append_only { $append_only_option = '--append-only' }
 
 $options = "${data_path_option} ${prometheus_option} ${listen_option} ${log_option} ${append_only_option} ${tls_option}"
 
