@@ -46,6 +46,8 @@ class restic_rest_server (
 ##
 }
 ```
-[//]: #
+
+module supports some features from master branch (probably future version 0.9.6), If it wasn't released yet, please specify manually version to '0.9.5' and don't use 'tls_cert' and 'tls_key' params.
+
 [rest-server]: <https://github.com/restic/rest-server/>
 [restic]: <https://github.com/restic/restic>

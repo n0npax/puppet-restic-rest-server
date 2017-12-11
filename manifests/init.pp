@@ -23,7 +23,7 @@ if $data_path {
     }
 }
 
-if $tls_cert and $tls_cert {
+if $tls_cert and $tls_key {
     $tls_option = '--tls --tls-cert /etc/restic/rest-server/cert --tls-key /etc/restic/rest-server/key'
     file { '/etc/restic':
         ensure => directory,
@@ -50,7 +50,8 @@ if $tls_cert and $tls_cert {
         content => $tls_key,
         require => File['/etc/restic/rest-server'],
     }
-
+} elsif $tls_cert or $tls_key {
+    fail('You have to specify tls cert and tls key or neither')
 }
 
 
