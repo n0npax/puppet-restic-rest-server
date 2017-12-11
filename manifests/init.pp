@@ -17,9 +17,9 @@ class restic_rest_server (
 if $data_path {
     $data_path_option = "--path ${data_path}"
     file { $data_path:
-        recurse    => true,
-        ensure => directory,
-        owner  => $user,
+        ensure  => directory,
+        recurse => true,
+        owner   => $user,
     }
 }
 
@@ -27,26 +27,26 @@ if $tls_cert and $tls_key {
     $tls_option = '--tls --tls-cert /etc/restic/rest-server/cert --tls-key /etc/restic/rest-server/key'
     file { '/etc/restic':
         ensure => directory,
-        owner => $user,
-        group => $group,
+        owner  => $user,
+        group  => $group,
     }
     file { '/etc/restic/rest-server':
-        ensure => directory,
-        owner => $user,
-        group => $group,
+        ensure  => directory,
+        owner   => $user,
+        group   => $group,
         require => File['/etc/restic'],
     }
     file { '/etc/restic/rest-server/cert':
-        ensure => file,
-        owner => $user,
-        group => $group,
+        ensure  => file,
+        owner   => $user,
+        group   => $group,
         content => $tls_cert,
         require => File['/etc/restic/rest-server'],
     }
     file { '/etc/restic/rest-server/key':
-        ensure => file,
-        owner => $user,
-        group => $group,
+        ensure  => file,
+        owner   => $user,
+        group   => $group,
         content => $tls_key,
         require => File['/etc/restic/rest-server'],
     }
@@ -56,22 +56,22 @@ if $tls_cert and $tls_key {
 
 
 if $prometheus { $prometheus_option = '--prometheus' }
-if $listen { $listen_option = "--listen ${lister}" }
+if $listen { $listen_option = "--listen ${listen}" }
 if $log { $log_option = "--log ${log}" }
 if $append_only { $append_only_option = '--append-only' }
 
 $options = "${data_path_option} ${prometheus_option} ${listen_option} ${log_option} ${append_only_option} ${tls_option}"
 
 if $install_unzip {
-   package {'unzip':
-       ensure => latest,
-   }
+    package {'unzip':
+        ensure => latest,
+    }
 }
 if $log {
     file { $log:
+        ensure => file,
         owner  => $user,
         group  => $group,
-        ensure => file,
     }
 }
 
@@ -98,18 +98,18 @@ file { '/etc/systemd/system/rest-server.service':
 }
 
 service {  'rest-server':
+  ensure  => running,
   enable  => true,
-  ensure  => 'running',
   require => [
-         File['/etc/systemd/system/rest-server.service'],
-         File['/usr/local/bin/rest-server'],
+      File['/etc/systemd/system/rest-server.service'],
+      File['/usr/local/bin/rest-server'],
   ],
 }
 if $restic_users {
   file { "${data_path}/.htpasswd":
-    owner  => $user,
-    group   => $group,
     ensure => file,
+    owner  => $user,
+    group  => $group,
     mode   => '0600',
     notify => Service['rest-server'],
   }
